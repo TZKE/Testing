@@ -1,0 +1,54 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-cyan-500 to-blue-600 min-h-screen flex items-center justify-center">
+  <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md text-center">
+    <h1 class="text-3xl font-bold text-blue-600 mb-4">🔐 Login</h1>
+    <input id="email" type="email" placeholder="Email" class="w-full mb-4 p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500" />
+    <input id="password" type="password" placeholder="Password" class="w-full mb-6 p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500" />
+    <button onclick="login()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-xl">Login</button>
+    <p id="loginStatus" class="text-sm text-red-600 mt-4"></p>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD3lcWTojgHRXDL4nEWoIbhsGqvxJ-dRXk",
+      authDomain: "hassan131-6c659.firebaseapp.com",
+      projectId: "hassan131-6c659",
+      storageBucket: "hassan131-6c659.appspot.com",
+      messagingSenderId: "217383242954",
+      appId: "1:217383242954:web:996cff2da0005ed0f37833",
+      measurementId: "G-0G8VEHQPY0"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    async function login() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const status = document.getElementById("loginStatus");
+
+      if (!email || !password) {
+        status.textContent = "❗ Please enter both email and password.";
+        return;
+      }
+
+      try {
+        await auth.signInWithEmailAndPassword(email, password);
+        status.textContent = "✅ Login successful! Redirecting...";
+        setTimeout(() => window.location.href = "home.html", 1500);
+      } catch (error) {
+        status.textContent = "❌ " + error.message;
+      }
+    }
+  </script>
+</body>
+</html>

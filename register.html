@@ -1,0 +1,81 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-green-400 to-blue-500 min-h-screen flex items-center justify-center">
+  <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md text-center">
+    <h1 class="text-3xl font-bold text-green-600 mb-4">🔑 Register</h1>
+    <input id="name" type="text" placeholder="Your Name" class="w-full mb-3 p-3 border rounded-xl" />
+    <input id="email" type="email" placeholder="Email" class="w-full mb-3 p-3 border rounded-xl" />
+    <input id="password" type="password" placeholder="Password" class="w-full mb-3 p-3 border rounded-xl" />
+    <input id="activationCode" type="text" placeholder="Activation Code" class="w-full mb-4 p-3 border rounded-xl" />
+    <button onclick="register()" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-xl">Register</button>
+    <p id="registerStatus" class="text-sm text-red-600 mt-4"></p>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD3lcWTojgHRXDL4nEWoIbhsGqvxJ-dRXk",
+      authDomain: "hassan131-6c659.firebaseapp.com",
+      projectId: "hassan131-6c659",
+      storageBucket: "hassan131-6c659.appspot.com",
+      messagingSenderId: "217383242954",
+      appId: "1:217383242954:web:996cff2da0005ed0f37833",
+      measurementId: "G-0G8VEHQPY0"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    async function register() {
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const activationCode = document.getElementById("activationCode").value.trim().toUpperCase();
+      const status = document.getElementById("registerStatus");
+
+      if (!name || !email || !password || !activationCode) {
+        status.textContent = "❗ Please fill in all fields.";
+        return;
+      }
+
+      try {
+        const codeDoc = await db.collection("activationCodes").doc(activationCode).get();
+        if (!codeDoc.exists || codeDoc.data().used) {
+          status.textContent = "❌ Invalid or used activation code.";
+          return;
+        }
+
+        const userCred = await auth.createUserWithEmailAndPassword(email, password);
+        await db.collection("users").doc(userCred.user.uid).set({ name, email });
+        await db.collection("activationCodes").doc(activationCode).update({ used: true });
+
+        // Telegram bot notification
+        await fetch(`https://api.telegram.org/bot7707208069:AAHlxEFnwplF-EUMe1QODSuLiH2RLTnbIhI/sendMessage`, {
+          method: "POST",
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: "5429939181",
+            text: `🆕 New User Registered:
+Name: ${name}
+Email: ${email}`
+          })
+        });
+
+        status.textContent = "✅ Registered! Redirecting to login...";
+        setTimeout(() => window.location.href = "login.html", 2000);
+      } catch (error) {
+        status.textContent = "❌ " + error.message;
+      }
+    }
+  </script>
+</body>
+</html>
